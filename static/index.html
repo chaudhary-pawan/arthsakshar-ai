@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ArthSakshar AI - Campaign Management Dashboard for Maharashtra's Budget Literacy Initiative">
+    <title>ArthSakshar AI – Campaign Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇳</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- ═══ Header ═══ -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-icon">🇮🇳</div>
+                <div>
+                    <h1>ArthSakshar AI</h1>
+                    <span class="subtitle">Maharashtra Budget Literacy – AI Civic Calling Network</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    System Online
+                </div>
+                <button class="btn btn-sm btn-outline" onclick="refreshAll()">🔄 Refresh</button>
+            </div>
+        </header>
+
+        <!-- ═══ Stats Grid ═══ -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">📞</div>
+                <div class="stat-value" id="statTotalCalls">0</div>
+                <div class="stat-label">Total Calls</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="statCompleted">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📲</div>
+                <div class="stat-value" id="statTransferred">0</div>
+                <div class="stat-label">Transferred</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="statInterested">0</div>
+                <div class="stat-label">Interested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔁</div>
+                <div class="stat-value" id="statCallbacks">0</div>
+                <div class="stat-label">Callbacks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏙️</div>
+                <div class="stat-value" id="statCities">0</div>
+                <div class="stat-label">Cities Reached</div>
+            </div>
+        </div>
+
+        <!-- ═══ Main Grid ═══ -->
+        <div class="main-grid">
+
+            <!-- Campaign Controls -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🚀 Campaign Manager</h2>
+                </div>
+                <div class="card-body">
+                    <div class="campaign-form">
+                        <input type="text" id="campaignName" placeholder="Campaign name (e.g., Budget Literacy March 2026)">
+                        <button class="btn btn-primary" onclick="startCampaign()">
+                            ▶ Launch
+                        </button>
+                    </div>
+                    <div id="campaignList">
+                        <div class="loading">
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Calls -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 Recent Calls</h2>
+                    <span class="stat-label" id="callCount">loading...</span>
+                </div>
+                <div class="card-body">
+                    <ul class="call-list" id="callList">
+                        <div class="loading">
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Events Table (Full Width) -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2>📍 Maharashtra Events</h2>
+                    <span class="stat-label" id="eventCount">loading...</span>
+                </div>
+                <div class="card-body">
+                    <table class="events-table" id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>City</th>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Coordinator</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsBody">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="loading">
+                                        <div class="loading-dot"></div>
+                                        <div class="loading-dot"></div>
+                                        <div class="loading-dot"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
