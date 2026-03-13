@@ -118,6 +118,16 @@ async def get_calls(limit: int = 50):
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
+async def get_call(call_sid: str):
+    """Get a specific call log by call_sid."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM calls WHERE call_sid = ?", (call_sid,)
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else {}
+
 
 async def get_events(city: str = None):
     """Get events, optionally filtered by city."""

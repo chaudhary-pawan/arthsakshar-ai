@@ -3,12 +3,15 @@ ArthSakshar AI – Bulk Call Manager
 Handles batch calling of CA database with rate limiting and status tracking.
 """
 
-import csv
 import asyncio
 import logging
 from twilio.rest import Client
+import openpyxl
+import os
 from config import settings
 import database as db
+
+EXCEL_FILE = "call_responses.xlsx"
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +21,41 @@ def get_twilio_client() -> Client:
     return Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
 
-def load_ca_data(csv_path: str = "sample_data/ca_data.csv") -> list[dict]:
-    """Load CA database from CSV file."""
+def load_ca_data(excel_path: str = EXCEL_FILE) -> list[dict]:
+    """Load CA database directly from the tracking Excel file."""
     records = []
     try:
-        with open(csv_path, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                records.append({
-                    "name": row.get("name", ""),
-                    "phone": row.get("phone", ""),
-                    "city": row.get("city", ""),
-                    "language_pref": row.get("language_pref", "english"),
-                })
-        logger.info(f"Loaded {len(records)} CA records from {csv_path}")
-    except FileNotFoundError:
-        logger.error(f"CA data file not found: {csv_path}")
+        if not os.path.exists(excel_path):
+            logger.error(f"Excel file not found at {excel_path}. Please create it and add contacts.")
+            return []
+            
+        wb = openpyxl.load_workbook(excel_path, data_only=True)
+        ws = wb.active
+        
+        # Headers are expected: Name (1), Number (2)
+        # Start reading from row 1, in case there are no headers
+        for row in range(1, ws.max_row + 1):
+            name_val = ws.cell(row=row, column=1).value
+            phone_val = ws.cell(row=row, column=2).value
+            
+            # Skip empty rows or header rows
+            if not phone_val:
+                continue
+                
+            phone_str = str(phone_val).strip()
+            if phone_str.lower() in ("number", "phone", "phone number", "mobile"):
+                continue
+                
+            records.append({
+                "name": str(name_val).strip() if name_val else "Unknown",
+                "phone": phone_str,
+                "city": "", # Can add city column in Excel later if needed
+                "language_pref": "marathi", # Defaulting to Marathi per prompt requirement
+            })
+            
+        logger.info(f"Loaded {len(records)} CA records from {excel_path}")
     except Exception as e:
-        logger.error(f"Error loading CA data: {e}")
+        logger.error(f"Error loading CA data from Excel: {e}")
     return records
 
 
@@ -62,14 +82,14 @@ def initiate_call(phone_number: str, webhook_url: str) -> str | None:
         return None
 
 
-async def run_campaign(campaign_id: int, csv_path: str = "sample_data/ca_data.csv"):
+async def run_campaign(campaign_id: int, excel_path: str = EXCEL_FILE):
     """
     Run a full bulk calling campaign.
     Batches calls with rate limiting to avoid spam flags.
     """
-    records = load_ca_data(csv_path)
+    records = load_ca_data(excel_path)
     if not records:
-        logger.error("No records to call")
+        logger.error("No records found in Excel to call")
         await db.update_campaign(campaign_id, status="failed")
         return
 
