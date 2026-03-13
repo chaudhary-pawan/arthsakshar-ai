@@ -86,9 +86,9 @@ INTENT_PATTERNS = {
     },
     Intent.PROGRAM_DETAILS: {
         "keywords": [
-            "what", "about", "details", "information", "tell me",
-            "explain", "क्या", "बताइए", "जानकारी", "विवरण",
-            "काय", "सांगा", "माहिती", "kya hai", "batao",
+            "about", "details", "information", "tell me",
+            "explain", "बताइए", "जानकारी", "विवरण",
+            "सांगा", "माहिती", "kya hai", "batao", "काय आहे", "क्या है"
         ],
     },
     Intent.CALLBACK: {

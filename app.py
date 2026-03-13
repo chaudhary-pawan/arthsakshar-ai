@@ -27,11 +27,16 @@ from faq_engine import detect_intent, process_user_input, Intent
 import sarvam_ai
 import database as db
 import call_manager
+import excel_manager
 
 # ─── Logging ────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    handlers=[
+        logging.FileHandler("arthsakshar.log"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger("arthsakshar")
 
@@ -162,14 +167,16 @@ async def voice_language(request: Request):
     # Update DB
     await db.update_call(call_sid, language=language)
 
-    # Build introduction
-    intro_text = get_full_introduction(language)
+    # Build introduction in smaller chunks to avoid Twilio TTS cut-offs
     voice_name, voice_lang = get_voice(language)
 
     response = VoiceResponse()
 
-    # Play introduction via Twilio TTS
-    response.say(intro_text, voice=voice_name, language=voice_lang)
+    # Play introduction via Twilio TTS in pieces
+    for key in ["greeting", "introduction", "workshop_info", "ask_interest"]:
+        part = get_script(language, key)
+        if part:
+            response.say(part, voice=voice_name, language=voice_lang)
 
     # Record user's speech response (Sarvam AI will transcribe it)
     response.record(
@@ -233,17 +240,39 @@ async def voice_process_speech(request: Request):
     # Handle different intents
     if intent == Intent.TRANSFER:
         response.say(response_text, voice=voice_name, language=voice_lang)
-        response.dial(
-            settings.HUMAN_AGENT_NUMBER,
+        dial = response.dial(
             timeout=30,
             caller_id=settings.TWILIO_PHONE_NUMBER,
         )
+        dial.number(settings.HUMAN_AGENT_NUMBER)
         await db.update_call(call_sid, transferred=1, status="transferred")
+        
+        call_info = await db.get_call(call_sid)
+        await asyncio.to_thread(
+            excel_manager.log_call_response,
+            phone=call_info.get("phone_number", ""),
+            name=call_info.get("ca_name", ""),
+            status="Transferred",
+            interest="Need More Information",
+            transferred="Yes",
+            notes="Transferred to human agent for complex query"
+        )
         logger.info(f"📲 Call transferred: {call_sid}")
 
     elif intent == Intent.YES_INTERESTED:
         session["interested"] = True
         await db.update_call(call_sid, interested=1)
+        
+        call_info = await db.get_call(call_sid)
+        await asyncio.to_thread(
+            excel_manager.log_call_response,
+            phone=call_info.get("phone_number", ""),
+            name=call_info.get("ca_name", ""),
+            status="Completed",
+            interest="Interested",
+            follow_up="Yes",
+            notes="Agreed to participate"
+        )
 
         city = session.get("city", "")
         event_text = ""
@@ -262,10 +291,31 @@ async def voice_process_speech(request: Request):
     elif intent == Intent.NO_INTERESTED:
         response.say(response_text, voice=voice_name, language=voice_lang)
         await db.update_call(call_sid, status="completed")
+        
+        call_info = await db.get_call(call_sid)
+        await asyncio.to_thread(
+            excel_manager.log_call_response,
+            phone=call_info.get("phone_number", ""),
+            name=call_info.get("ca_name", ""),
+            status="Completed",
+            interest="Not Interested",
+            notes="Declined participation"
+        )
 
     elif intent == Intent.CALLBACK:
         await db.update_call(call_sid, callback_requested=1, status="callback")
         response.say(response_text, voice=voice_name, language=voice_lang)
+        
+        call_info = await db.get_call(call_sid)
+        await asyncio.to_thread(
+            excel_manager.log_call_response,
+            phone=call_info.get("phone_number", ""),
+            name=call_info.get("ca_name", ""),
+            status="Callback Requested",
+            interest="Need More Information",
+            follow_up="Yes",
+            notes="Asked to call back later"
+        )
 
     else:
         # Continue conversation — max 5 turns
@@ -338,6 +388,18 @@ async def voice_status(request: Request):
 
     if status in ("completed", "no-answer", "busy", "failed", "canceled"):
         await db.update_call(call_sid, status=status, duration=int(duration or 0))
+        
+        # If call failed/busy, update Excel right away
+        if status in ("no-answer", "busy", "failed", "canceled"):
+            call_info = await db.get_call(call_sid)
+            await asyncio.to_thread(
+                excel_manager.log_call_response,
+                phone=call_info.get("phone_number", ""),
+                name=call_info.get("ca_name", ""),
+                status=status.capitalize(),
+                notes=f"Call ended with status: {status}"
+            )
+            
         call_sessions.pop(call_sid, None)
 
     return Response(content="<Response/>", media_type="application/xml")
@@ -392,13 +454,13 @@ async def api_campaigns():
 
 @app.post("/api/campaigns/start")
 async def api_start_campaign(request: Request, background_tasks: BackgroundTasks):
-    """Start a new bulk calling campaign."""
+    """Start a new bulk calling campaign drawing directly from the Excel file."""
     body = await request.json()
     name = body.get("name", f"Campaign {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    csv_path = body.get("csv_path", "sample_data/ca_data.csv")
 
     campaign_id = await db.create_campaign(name, total_calls=0)
-    background_tasks.add_task(call_manager.run_campaign, campaign_id, csv_path)
+    # Defaulting to the central Excel file configured in call_manager
+    background_tasks.add_task(call_manager.run_campaign, campaign_id)
 
     return JSONResponse({
         "status": "started",
