@@ -10,3 +10,15 @@ dist/
 build/
 .idea/
 .vscode/
+
+# Runtime & Logs
+*.log
+
+# Data files
+call_responses.xlsx
+
+# Binaries
+cloudflared.exe
+
+# Test scripts
+test_excel.py
