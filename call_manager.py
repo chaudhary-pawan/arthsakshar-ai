@@ -109,7 +109,7 @@ async def run_campaign(campaign_id: int, excel_path: str = EXCEL_FILE):
             if not phone:
                 continue
 
-            call_sid = initiate_call(phone, webhook_url)
+            call_sid = await asyncio.to_thread(initiate_call, phone, webhook_url)
             if call_sid:
                 await db.log_call(
                     call_sid=call_sid,
