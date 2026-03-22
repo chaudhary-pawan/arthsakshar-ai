@@ -75,10 +75,15 @@ def initiate_call(phone_number: str, webhook_url: str) -> str | None:
             status_callback_method="POST",
             status_callback_event=["initiated", "ringing", "answered", "completed"],
         )
-        logger.info(f"Call initiated: {call.sid} → {phone_number}")
+        logger.info(f"Call initiated: {call.sid} to {phone_number}")
         return call.sid
     except Exception as e:
-        logger.error(f"Call failed to {phone_number}: {e}")
+        # Log full Twilio error so it's visible in arthsakshar.log
+        error_msg = str(e)
+        logger.error(f"[CALL FAILED] {phone_number}: {error_msg}")
+        # Also print to stderr so it shows in the console
+        import sys
+        print(f"[CALL FAILED] {phone_number}: {error_msg}", file=sys.stderr)
         return None
 
 
