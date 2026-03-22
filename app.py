@@ -43,6 +43,12 @@ logger = logging.getLogger("arthsakshar")
 
 # ─── In-memory session store (call_sid → session data) ──────────
 call_sessions: dict[str, dict] = {}
+excel_lock = asyncio.Lock()
+
+async def log_to_excel_safe(**kwargs):
+    """Safely log to Excel using a lock to prevent concurrent write corruption."""
+    async with excel_lock:
+        await asyncio.to_thread(excel_manager.log_call_response, **kwargs)
 
 # ─── TTS Voice Config ──────────────────────────────────────────
 # Twilio built-in voices for reliable TTS (no extra HTTP needed)
@@ -257,8 +263,7 @@ async def voice_process_speech(request: Request):
         await db.update_call(call_sid, transferred=1, status="transferred")
         
         call_info = await db.get_call(call_sid)
-        await asyncio.to_thread(
-            excel_manager.log_call_response,
+        await log_to_excel_safe(
             phone=call_info.get("phone_number", ""),
             name=call_info.get("ca_name", ""),
             status="Transferred",
@@ -273,8 +278,7 @@ async def voice_process_speech(request: Request):
         await db.update_call(call_sid, interested=1)
         
         call_info = await db.get_call(call_sid)
-        await asyncio.to_thread(
-            excel_manager.log_call_response,
+        await log_to_excel_safe(
             phone=call_info.get("phone_number", ""),
             name=call_info.get("ca_name", ""),
             status="Completed",
@@ -302,8 +306,7 @@ async def voice_process_speech(request: Request):
         await db.update_call(call_sid, status="completed")
         
         call_info = await db.get_call(call_sid)
-        await asyncio.to_thread(
-            excel_manager.log_call_response,
+        await log_to_excel_safe(
             phone=call_info.get("phone_number", ""),
             name=call_info.get("ca_name", ""),
             status="Completed",
@@ -316,8 +319,7 @@ async def voice_process_speech(request: Request):
         response.say(response_text, voice=voice_name, language=voice_lang)
         
         call_info = await db.get_call(call_sid)
-        await asyncio.to_thread(
-            excel_manager.log_call_response,
+        await log_to_excel_safe(
             phone=call_info.get("phone_number", ""),
             name=call_info.get("ca_name", ""),
             status="Callback Requested",
@@ -401,8 +403,7 @@ async def voice_status(request: Request):
         # If call failed/busy, update Excel right away
         if status in ("no-answer", "busy", "failed", "canceled"):
             call_info = await db.get_call(call_sid)
-            await asyncio.to_thread(
-                excel_manager.log_call_response,
+            await log_to_excel_safe(
                 phone=call_info.get("phone_number", ""),
                 name=call_info.get("ca_name", ""),
                 status=status.capitalize(),
