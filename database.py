@@ -13,6 +13,7 @@ DB_PATH = settings.DATABASE_PATH
 async def init_db():
     """Initialize database tables."""
     async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("PRAGMA journal_mode=WAL")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS calls (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
