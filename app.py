@@ -31,12 +31,18 @@ import call_manager
 import excel_manager
 
 # ─── Logging ────────────────────────────────────────────────────
+import sys
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
     handlers=[
-        logging.FileHandler("arthsakshar.log"),
-        logging.StreamHandler()
+        logging.FileHandler("arthsakshar.log", encoding="utf-8"),
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger("arthsakshar")
