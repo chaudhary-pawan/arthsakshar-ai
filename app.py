@@ -25,6 +25,7 @@ from scripts import (
 )
 from faq_engine import detect_intent, process_user_input, Intent
 import sarvam_ai
+import llm_agent
 import database as db
 import call_manager
 import excel_manager
@@ -108,6 +109,7 @@ async def voice_entry(request: Request):
         "state": "language_selection",
         "turn_count": 0,
         "interested": False,
+        "messages": [],
     }
 
     # Log the call
@@ -207,7 +209,7 @@ async def voice_process_speech(request: Request):
     call_sid = form.get("CallSid", "unknown")
     recording_url = form.get("RecordingUrl", "")
 
-    session = call_sessions.get(call_sid, {"language": "hindi", "turn_count": 0})
+    session = call_sessions.get(call_sid, {"language": "hindi", "turn_count": 0, "messages": []})
     language = session.get("language", "hindi")
     lang_code = LANGUAGE_CODES.get(language, "hi-IN")
     turn = session.get("turn_count", 0)
@@ -226,6 +228,13 @@ async def voice_process_speech(request: Request):
     # Process through intent detection
     if transcript:
         intent, response_text = process_user_input(transcript, language)
+        
+        if intent == Intent.UNKNOWN:
+            messages = session.get("messages", [])
+            response_text = await llm_agent.generate_response(transcript, language, messages)
+            messages.append({"role": "user", "content": transcript})
+            messages.append({"role": "assistant", "content": response_text})
+            session["messages"] = messages
     else:
         intent = Intent.UNKNOWN
         response_text = get_script(language, "fallback")
@@ -355,7 +364,7 @@ async def voice_conversation(request: Request):
     """
     form = await request.form()
     call_sid = form.get("CallSid", "unknown")
-    session = call_sessions.get(call_sid, {"language": "hindi", "turn_count": 0})
+    session = call_sessions.get(call_sid, {"language": "hindi", "turn_count": 0, "messages": []})
     language = session.get("language", "hindi")
     voice_name, voice_lang = get_voice(language)
 
