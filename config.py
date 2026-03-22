@@ -16,6 +16,9 @@ class Settings:
     SARVAM_STT_URL: str = "https://api.sarvam.ai/speech-to-text"
     SARVAM_TRANSLATE_URL: str = "https://api.sarvam.ai/translate"
 
+    # OpenAI
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+
     # Twilio
     TWILIO_ACCOUNT_SID: str = os.getenv("TWILIO_ACCOUNT_SID", "")
     TWILIO_AUTH_TOKEN: str = os.getenv("TWILIO_AUTH_TOKEN", "")
