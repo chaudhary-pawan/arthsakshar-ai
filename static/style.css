@@ -8,26 +8,26 @@
 }
 
 :root {
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #111827;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --bg-card-hover: rgba(31, 41, 55, 0.8);
-    --bg-glass: rgba(255, 255, 255, 0.03);
-    --border-glass: rgba(255, 255, 255, 0.08);
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --accent-violet: #8b5cf6;
-    --accent-violet-glow: rgba(139, 92, 246, 0.3);
-    --accent-blue: #3b82f6;
-    --accent-emerald: #10b981;
-    --accent-amber: #f59e0b;
-    --accent-rose: #f43f5e;
-    --accent-cyan: #06b6d4;
-    --gradient-primary: linear-gradient(135deg, #8b5cf6, #3b82f6);
-    --gradient-success: linear-gradient(135deg, #10b981, #06b6d4);
-    --gradient-warm: linear-gradient(135deg, #f59e0b, #f43f5e);
-    --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.15);
+    --bg-primary: #1e0500;
+    --bg-secondary: #2f0800;
+    --bg-card: rgba(43, 8, 0, 0.6);
+    --bg-card-hover: rgba(69, 13, 0, 0.7);
+    --bg-glass: rgba(255, 150, 50, 0.05);
+    --border-glass: rgba(255, 100, 50, 0.2);
+    --text-primary: #fff0e6;
+    --text-secondary: #ffc9b3;
+    --text-muted: #e69d85;
+    --accent-violet: #ff3300;
+    --accent-violet-glow: rgba(255, 51, 0, 0.4);
+    --accent-blue: #ff7700;
+    --accent-emerald: #ffcc00;
+    --accent-amber: #ff9900;
+    --accent-rose: #ff4d4d;
+    --accent-cyan: #ffdd44;
+    --gradient-primary: linear-gradient(135deg, #ff3300, #ffcc00);
+    --gradient-success: linear-gradient(135deg, #ffcc00, #ff7700);
+    --gradient-warm: linear-gradient(135deg, #ff4d4d, #ff9900);
+    --shadow-glow: 0 0 40px rgba(255, 119, 0, 0.3);
     --radius: 16px;
     --radius-sm: 10px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -50,11 +50,11 @@ body::before {
     width: 200%;
     height: 200%;
     background: 
-        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+        radial-gradient(circle at 10% 20%, rgba(255, 204, 0, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(255, 51, 0, 0.25) 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%, rgba(255, 119, 0, 0.2) 0%, transparent 50%);
     z-index: 0;
-    animation: bgPulse 15s ease-in-out infinite;
+    animation: bgPulse 20s ease-in-out infinite alternate;
 }
 
 @keyframes bgPulse {
