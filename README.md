@@ -49,7 +49,7 @@ Edit `.env` and fill in your credentials:
 SARVAM_API_KEY=your_sarvam_key
 TWILIO_ACCOUNT_SID=your_twilio_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_PHONE_NUMBER=+19257226809
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXXX
 HUMAN_AGENT_NUMBER=+91XXXXXXXXXX
 BASE_URL=https://your-ngrok-url.ngrok.io
 ```
